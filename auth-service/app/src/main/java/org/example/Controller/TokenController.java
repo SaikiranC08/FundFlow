@@ -29,20 +29,64 @@ public class TokenController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @PostMapping("/login")
-    public ResponseEntity AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO){
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
-        if(authentication.isAuthenticated()){
-            RefreshToken refreshToken = refreshTokenService.createNewToken(authRequestDTO.getUsername());
-            return new ResponseEntity<>(JwtResponseDTO.builder()
-                    .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
-                    .token(refreshToken.getToken())
-                    .build(), HttpStatus.OK);
+//    @PostMapping("/login")
+//    public ResponseEntity AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO){
+//        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
+//        if(authentication.isAuthenticated()){
+//            RefreshToken refreshToken = refreshTokenService.createNewToken(authRequestDTO.getUsername());
+//            return new ResponseEntity<>(JwtResponseDTO.builder()
+//                    .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
+//                    .token(refreshToken.getToken())
+//                    .build(), HttpStatus.OK);
+//
+//        } else {
+//            return new ResponseEntity<>("Exception in User Service", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+@PostMapping("/login")
+public ResponseEntity AuthenticateAndGetToken(
+        @RequestBody AuthRequestDTO authRequestDTO
+){
 
-        } else {
-            return new ResponseEntity<>("Exception in User Service", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    System.out.println("LOGIN API HIT");
+
+    Authentication authentication =
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authRequestDTO.getUsername(),
+                            authRequestDTO.getPassword()
+                    )
+            );
+
+    System.out.println("AUTH SUCCESS");
+
+    if(authentication.isAuthenticated()) {
+
+        System.out.println("INSIDE AUTHENTICATED");
+
+        RefreshToken refreshToken =
+                refreshTokenService.createNewToken(
+                        authRequestDTO.getUsername()
+                );
+
+        return new ResponseEntity<>(
+                JwtResponseDTO.builder()
+                              .accessToken(
+                                      jwtService.GenerateToken(
+                                              authRequestDTO.getUsername()
+                                      )
+                              )
+                              .token(refreshToken.getToken())
+                              .build(),
+                HttpStatus.OK
+        );
     }
+
+    return new ResponseEntity<>(
+            "Exception in User Service",
+            HttpStatus.INTERNAL_SERVER_ERROR
+    );
+}
 
     @PostMapping("/refreshToken")
     public JwtResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO){
