@@ -1,5 +1,5 @@
 import React from 'react'
-import Card from '../../../components/Card'
+import Card from '../components/Card'
 import ExpensesTable from '../components/ExpensesTable'
 import { UserSwitchIcon } from '@hugeicons/core-free-icons'
 

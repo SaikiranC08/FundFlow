@@ -4,6 +4,7 @@ package com.saikiran.expense_service.services;
 import com.saikiran.expense_service.entities.ExpenseInfo;
 import com.saikiran.expense_service.entities.FundInfo;
 import com.saikiran.expense_service.enums.FundStatus;
+import com.saikiran.expense_service.exception.DuplicateFundException;
 import com.saikiran.expense_service.exception.FundNotFoundException;
 import com.saikiran.expense_service.exception.InsufficientFundException;
 import com.saikiran.expense_service.mapper.FundMapper;
@@ -100,6 +101,19 @@ public class FundService {
             }
         }
 
+        if (
+                fundRepository.existsByUserIdAndOwnerTypeAndOwnerName(
+                        dto.getUserId(),
+                        dto.getOwnerType(),
+                        dto.getOwnerName()
+                )
+        ) {
+
+            throw new DuplicateFundException(
+                    "Fund already exists"
+            );
+        }
+
         // OTHER validation
         if ("OTHER".equals(dto.getOwnerType())
                 && dto.getOwnerName() == null) {
@@ -149,14 +163,15 @@ public class FundService {
     }
 
     @Transactional
-    public FundResponse deleteFund(String userId, Long fundId){
+    public void deleteFund(String userId, Long fundId){
         FundInfo fundInfo = fundRepository.findFundInfoByUserIdAndFundId(userId, fundId);
+
         if (fundInfo == null) {
             throw new FundNotFoundException("Fund not found");
         }
-         FundInfo fundInfo1 = fundRepository.deleteFundInfoByFundIdAndUserId(fundId,userId);
 
-        return fundMapper.toFundResponse(fundInfo1);
+        fundRepository.delete(fundInfo);
+
     }
 
     public List<FundResponse> getFundList(String userId){
@@ -188,5 +203,9 @@ public class FundService {
         return fundRepository.findDistinctOwnerNames(userId);
     }
 
+    public FundResponse getFundById(String userId, Long fundId) {
+        FundInfo fundInfo = fundRepository.getFundByUserIdAndFundId(userId,fundId);
+        return fundMapper.toFundResponse(fundInfo);
+    }
 }
 

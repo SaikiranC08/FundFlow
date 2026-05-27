@@ -44,5 +44,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Unexpected error occurred");
     }
+
+    @ExceptionHandler(
+            DuplicateFundException.class
+    )
+    public ResponseEntity<String>
+    handleDuplicateFund(
+            DuplicateFundException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ex.getMessage());
+    }
 }
 

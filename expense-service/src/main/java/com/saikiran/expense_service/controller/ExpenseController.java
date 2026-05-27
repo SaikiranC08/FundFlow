@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 
 @RestController
@@ -99,6 +100,11 @@ public class ExpenseController {
         return ResponseEntity.ok(
                 expenseService.getCategoriesExpense(userId)
         );
+    }
+
+    @GetMapping("/fund/{fundId}")
+    public ResponseEntity<List<ExpenseResponse>> getExpensesByFundId(@RequestHeader("x-user-id") @NonNull String userId, @PathVariable Long fundId){
+        return ResponseEntity.ok(expenseService.getExpenseByfundId(userId,fundId));
     }
 
 

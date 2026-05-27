@@ -198,6 +198,21 @@ public class ExpenseService {
        return expenseMapper.toExpenseResponse(expenseInfo);
     }
 
+    public List<ExpenseResponse> getExpenseByfundId(String userId,Long fundId){
+        List<ExpenseInfo> expenseInfo = expenseRepository.findExpenseInfoByUserIdAndFund_FundId(userId,fundId);
+
+
+
+        return expenseInfo
+                .stream()
+
+                .map(
+                        expenseMapper::toExpenseResponse
+                )
+
+                .toList();
+    }
+
 
 
     //delete expense

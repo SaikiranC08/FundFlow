@@ -15,6 +15,12 @@ import DashboardLayout from "./shared/components/layout/DashboardLayout";
 import CreateExpensePage from "./features/expenses/pages/CreateExpensePage";
 import EditExpensePage
 from "./features/expenses/pages/EditExpensePage";
+import CreateFundPage
+from "./features/funds/pages/CreateFundPage";
+import EditFundPage
+from "./features/funds/pages/EditFundPage";
+import FundDetailsPage
+from "./features/funds/pages/FundDetailsPage";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -57,6 +63,19 @@ function App() {
                     <Route path="/expenses/edit/:expenseId" element={<EditExpensePage />} />
 
                     <Route path="/funds" element={<FundsPage />} />
+                    <Route
+                        path="/funds/create"
+                        element={<CreateFundPage />}
+                        />
+
+                        <Route
+                            path="/funds/edit/:fundId"
+                            element={<EditFundPage />}
+                            />
+                            <Route
+                                path="/funds/:fundId"
+                                element={<FundDetailsPage />}
+                                />
 
                     <Route path="/analytics" element={<AnalyticsPage />} />
 

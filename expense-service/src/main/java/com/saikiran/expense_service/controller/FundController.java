@@ -60,5 +60,26 @@ public class FundController {
         fundService.deleteFund(userId, fundId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{fundId}")
+    public ResponseEntity<FundResponse>
+    getFundById(
+
+            @PathVariable Long fundId,
+
+            @RequestHeader("x-user-id")
+            String userId
+    ) {
+
+        FundResponse response =
+                fundService.getFundById(
+                        userId,
+                        fundId
+                );
+
+        return ResponseEntity.ok(
+                response
+        );
+    }
 }
 
