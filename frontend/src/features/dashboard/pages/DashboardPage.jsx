@@ -7,14 +7,24 @@ import {
   getDashboard
 } from "../api/getDashboard";
 
+import {
+  getWeeklyAnalytics
+} from "../api/getWeeklyAnalytics";
+
 import DashboardStats
 from "../components/DashboardStats";
+
+import QuickActions
+from "../components/QuickActions";
 
 import RecentExpenses
 from "../components/RecentExpenses";
 
 import RecentFunds
 from "../components/RecentFunds";
+
+import WeeklySpendingSnapshot
+from "../components/WeeklySpendingSnapshot";
 
 function DashboardPage() {
 
@@ -24,16 +34,25 @@ function DashboardPage() {
   const [loading, setLoading] =
     useState(true);
 
+  const [weeklyAnalytics, setWeeklyAnalytics] =
+    useState([]);
+
   useEffect(() => {
 
     async function fetchDashboard() {
 
       try {
 
-        const response =
-          await getDashboard();
+        const [
+          dashboardResponse,
+          weeklyResponse
+        ] = await Promise.all([
+          getDashboard(),
+          getWeeklyAnalytics()
+        ]);
 
-        setDashboard(response);
+        setDashboard(dashboardResponse);
+        setWeeklyAnalytics(weeklyResponse || []);
 
       } catch (error) {
 
@@ -69,6 +88,28 @@ function DashboardPage() {
       recentFunds: []
     };
 
+  const today =
+    new Date().toLocaleDateString(
+      "en-IN",
+      {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }
+    );
+
+  const storedUsername =
+    localStorage.getItem("username");
+
+  const username =
+    storedUsername?.trim();
+
+  const displayName =
+    username
+      ? username.charAt(0).toUpperCase() + username.slice(1)
+      : "";
+
   return (
 
     <div
@@ -87,34 +128,82 @@ function DashboardPage() {
         "
       >
 
-        <div>
+        <div
+          className="
+            flex
+            flex-col
+            lg:flex-row
+            lg:items-center
+            lg:justify-between
+            gap-5
+          "
+        >
 
-          <h1
+          <div>
+
+            <h1
+              className="
+                text-4xl
+                font-bold
+                text-gray-900
+              "
+            >
+              {displayName
+                ? `Welcome back, ${displayName} 👋`
+                : "Welcome back 👋"}
+            </h1>
+
+            <p className="text-gray-500 mt-2">
+              Here’s your financial overview today.
+            </p>
+
+          </div>
+
+          <div
             className="
-              text-3xl
-              font-bold
-              text-gray-900
+              bg-white
+              border border-gray-100
+              shadow-sm
+              rounded-2xl
+              px-5 py-3
+              text-sm
+              font-medium
+              text-gray-700
+              w-fit
             "
           >
-            Dashboard
-          </h1>
-
-          <p className="text-gray-500 mt-1">
-            Financial summary and recent activity
-          </p>
+            {today}
+          </div>
 
         </div>
+
+        <QuickActions />
 
         <DashboardStats
           dashboard={dashboardData}
         />
 
-        <RecentExpenses
-          expenses={dashboardData.recentExpenses || []}
-        />
+        <div
+          className="
+            grid
+            grid-cols-1
+            xl:grid-cols-[1.15fr_0.85fr]
+            gap-6
+          "
+        >
 
-        <RecentFunds
-          funds={dashboardData.recentFunds || []}
+          <RecentExpenses
+            expenses={dashboardData.recentExpenses || []}
+          />
+
+          <RecentFunds
+            funds={dashboardData.recentFunds || []}
+          />
+
+        </div>
+
+        <WeeklySpendingSnapshot
+          weeklyAnalytics={weeklyAnalytics}
         />
 
       </div>

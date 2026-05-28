@@ -1,64 +1,307 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState
+} from "react";
 import { getExpenses } from "../api/getExpenses";
+import { getFilteredExpenses } from "../api/getFilteredExpenses";
 import { useNavigate } from "react-router-dom";
 import { deleteExpense }
 from "../api/deleteExpense";
+import DateRangeCalendar
+from "./DateRangeCalendar";
 import {
-  Search,
-  Plus,
   Pencil,
   Trash2,
   Calendar,
+  X,
+  UtensilsCrossed,
+  Plane,
+  ShoppingBag,
+  HeartPulse,
+  Film,
+  Circle
 } from "lucide-react";
+
+const dateFilterOptions = [
+  {
+    label: "Today",
+    value: "TODAY"
+  },
+  {
+    label: "Last 7 Days",
+    value: "LAST_7_DAYS"
+  },
+  {
+    label: "Last 30 Days",
+    value: "LAST_30_DAYS"
+  },
+  {
+    label: "Custom Range",
+    value: "CUSTOM"
+  }
+];
 
 function ExpenseTable() {
 
   const [expenses, setExpenses] = useState([]);
   const [pagination, setPagination] = useState({});
+  const [currentPage, setCurrentPage] =
+    useState(0);
+
+  const [activeFilter, setActiveFilter] =
+    useState("");
+
+  const [isCalendarOpen, setIsCalendarOpen] =
+    useState(false);
+
+  const [startDate, setStartDate] =
+    useState("");
+
+  const [endDate, setEndDate] =
+    useState("");
+
+  const [isFiltering, setIsFiltering] =
+    useState(false);
+
+  const [filterError, setFilterError] =
+    useState("");
 
   const navigate = useNavigate();
 
+  async function fetchExpenses(page = 0) {
+
+    try {
+
+      const response = await getExpenses(page);
+
+      setExpenses(response.expenses);
+
+      setPagination(response.pagination);
+
+      setCurrentPage(
+        response.pagination?.page ?? page
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+  }
+
   useEffect(() => {
 
-    async function fetchExpenses() {
+    async function fetchInitialExpenses() {
 
       try {
 
-        const response = await getExpenses();
+        const response = await getExpenses(0);
 
         setExpenses(response.expenses);
 
         setPagination(response.pagination);
 
+        setCurrentPage(
+          response.pagination?.page ?? 0
+        );
+
       } catch (error) {
 
         console.error(error);
-
       }
     }
 
-    fetchExpenses();
+    fetchInitialExpenses();
 
   }, []);
 
-  const getCategoryColor = (category) => {
+  async function applyDateFilter({
+    range,
+    nextStartDate = "",
+    nextEndDate = ""
+  }) {
 
-    switch (category) {
+    setIsFiltering(true);
+    setFilterError("");
 
-      case "Food":
-        return "bg-red-100 text-red-600";
+    try {
 
-      case "Travel":
-        return "bg-blue-100 text-blue-600";
+      const filteredExpenses =
+        await getFilteredExpenses({
+          range,
+          startDate: nextStartDate,
+          endDate: nextEndDate
+        });
 
-      case "Shopping":
-        return "bg-purple-100 text-purple-600";
+      setExpenses(filteredExpenses);
 
-      case "Health":
-        return "bg-green-100 text-green-600";
+    } catch (error) {
+
+      console.error(error);
+      setFilterError("Could not load filtered expenses.");
+
+    } finally {
+
+      setIsFiltering(false);
+    }
+  }
+
+  async function handleFilterChange(event) {
+
+    const selectedFilter =
+      event.target.value;
+
+    setActiveFilter(selectedFilter);
+    setFilterError("");
+
+    if (!selectedFilter) {
+
+      setIsCalendarOpen(false);
+      setStartDate("");
+      setEndDate("");
+      await fetchExpenses(0);
+
+      return;
+    }
+
+    if (selectedFilter === "CUSTOM") {
+
+      setStartDate("");
+      setEndDate("");
+      setIsCalendarOpen(true);
+
+      return;
+    }
+
+    setIsCalendarOpen(false);
+    setStartDate("");
+    setEndDate("");
+
+    await applyDateFilter({
+      range: selectedFilter
+    });
+  }
+
+  async function handleCustomRangeChange(
+    nextStartDate,
+    nextEndDate
+  ) {
+
+    setStartDate(nextStartDate);
+    setEndDate(nextEndDate);
+
+    if (nextStartDate && nextEndDate) {
+
+      setIsCalendarOpen(false);
+
+      await applyDateFilter({
+        range: "CUSTOM",
+        nextStartDate,
+        nextEndDate
+      });
+    }
+  }
+
+  async function clearDateFilter() {
+
+    setActiveFilter("");
+    setIsCalendarOpen(false);
+    setStartDate("");
+    setEndDate("");
+    setFilterError("");
+
+    await fetchExpenses(0);
+  }
+
+  async function goToPreviousPage() {
+
+    if (
+      activeFilter ||
+      !pagination.hasPrevious
+    ) {
+
+      return;
+    }
+
+    await fetchExpenses(
+      Math.max(currentPage - 1, 0)
+    );
+  }
+
+  async function goToNextPage() {
+
+    if (
+      activeFilter ||
+      !pagination.hasNext
+    ) {
+
+      return;
+    }
+
+    await fetchExpenses(
+      currentPage + 1
+    );
+  }
+
+  const selectedFilterLabel =
+    dateFilterOptions.find(
+      (option) => option.value === activeFilter
+    )?.label;
+
+  const isDateFilterActive =
+    Boolean(activeFilter);
+
+  const totalPages =
+    pagination.totalPages ?? 1;
+
+  const hasPreviousPage =
+    Boolean(pagination.hasPrevious);
+
+  const hasNextPage =
+    Boolean(pagination.hasNext);
+
+  const getCategoryConfig = (category) => {
+
+    const normalizedCategory =
+      category?.toLowerCase();
+
+    switch (normalizedCategory) {
+
+      case "food":
+        return {
+          icon: UtensilsCrossed,
+          className: "bg-red-50 text-red-600 border-red-100"
+        };
+
+      case "travel":
+        return {
+          icon: Plane,
+          className: "bg-blue-50 text-blue-600 border-blue-100"
+        };
+
+      case "shopping":
+        return {
+          icon: ShoppingBag,
+          className: "bg-purple-50 text-purple-600 border-purple-100"
+        };
+
+      case "health":
+        return {
+          icon: HeartPulse,
+          className: "bg-emerald-50 text-emerald-600 border-emerald-100"
+        };
+
+      case "entertainment":
+        return {
+          icon: Film,
+          className: "bg-amber-50 text-amber-600 border-amber-100"
+        };
 
       default:
-        return "bg-gray-100 text-gray-600";
+        return {
+          icon: Circle,
+          className: "bg-gray-50 text-gray-600 border-gray-100"
+        };
     }
   };
 
@@ -133,58 +376,113 @@ function ExpenseTable() {
 
       </div>
 
-      {/* Search + Filters */}
+      {/* Date Filters */}
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-end mb-6">
 
-        <div
-          className="
-            flex items-center gap-2
-            border border-gray-200
-            rounded-xl
-            px-3 py-2
-            w-80
-          "
-        >
-          <Search size={18} className="text-gray-400" />
+        <div className="relative flex items-center gap-3">
 
-          <input
-            type="text"
-            placeholder="Search expenses..."
-            className="
-              outline-none
-              border-none
-              w-full
-              text-sm
-            "
-          />
-        </div>
-
-        <div className="flex items-center gap-3">
-
-          <button
+          <div
             className="
               flex items-center gap-2
               border border-gray-200
-              px-4 py-2
               rounded-xl
-              text-sm
+              bg-white
+              px-3 py-2
               text-gray-600
+              shadow-sm
             "
           >
             <Calendar size={16} />
-            This Month
-          </button>
+
+            <select
+              value={activeFilter}
+              onChange={handleFilterChange}
+              className="
+                bg-transparent
+                outline-none
+                text-sm
+                font-medium
+                text-gray-700
+              "
+            >
+              <option value="">
+                Date filter
+              </option>
+
+              {dateFilterOptions.map((option) => (
+
+                <option
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </option>
+              ))}
+
+            </select>
+
+          </div>
+
+          {activeFilter && (
+
+            <button
+              type="button"
+              onClick={clearDateFilter}
+              className="
+                flex items-center gap-2
+                rounded-xl
+                border border-gray-200
+                px-3 py-2
+                text-sm
+                font-medium
+                text-gray-500
+                hover:bg-gray-50
+                transition
+              "
+            >
+              <X size={15} />
+              Clear
+            </button>
+          )}
+
+          {isCalendarOpen && (
+
+            <DateRangeCalendar
+              startDate={startDate}
+              endDate={endDate}
+              onRangeChange={handleCustomRangeChange}
+            />
+          )}
 
         </div>
 
       </div>
 
+      {(isFiltering || filterError || isDateFilterActive) && (
+
+        <div className="mb-5 flex items-center justify-between">
+
+          <p className="text-sm text-gray-500">
+            {isFiltering
+              ? "Filtering expenses..."
+              : filterError || (
+                activeFilter === "CUSTOM" && endDate
+                  ? `Showing expenses from ${startDate} to ${endDate}`
+                  : activeFilter === "CUSTOM" && startDate
+                    ? `Start date selected: ${startDate}`
+                    : `Showing ${selectedFilterLabel?.toLowerCase()} transactions`
+              )}
+          </p>
+
+        </div>
+      )}
+
       {/* Table */}
 
       <div className="overflow-x-auto">
 
-        <table className="w-full">
+        <table className="w-full border-separate border-spacing-y-2">
 
           <thead>
 
@@ -227,18 +525,44 @@ function ExpenseTable() {
 
           <tbody>
 
+            {expenses.length === 0 && (
+
+              <tr>
+
+                <td
+                  colSpan="6"
+                  className="
+                    rounded-2xl
+                    bg-gray-50
+                    py-14
+                    text-center
+                    text-sm
+                    font-medium
+                    text-gray-500
+                  "
+                >
+                  {isDateFilterActive
+                    ? "No transactions found for selected date range"
+                    : "No transactions found"}
+                </td>
+
+              </tr>
+            )}
+
             {expenses.map((expense) => (
 
               <tr
                 key={expense.expenseId}
                 className="
-                  border-b border-gray-50
-                  hover:bg-gray-50
+                  bg-white
+                  shadow-sm shadow-gray-100/70
+                  hover:bg-gray-50/80
+                  hover:shadow-md hover:shadow-gray-100
                   transition
                 "
               >
 
-                <td className="py-5 text-sm text-gray-600">
+                <td className="rounded-l-2xl py-5 pl-4 text-sm text-gray-600">
                   {expense.date}
                 </td>
 
@@ -260,17 +584,32 @@ function ExpenseTable() {
 
                 <td className="py-5">
 
-                  <span
-                    className={`
-                      px-3 py-1
-                      rounded-full
-                      text-xs
-                      font-medium
-                      ${getCategoryColor(expense.category)}
-                    `}
-                  >
-                    {expense.category}
-                  </span>
+                  {(() => {
+
+                    const categoryConfig =
+                      getCategoryConfig(expense.category);
+
+                    const CategoryIcon =
+                      categoryConfig.icon;
+
+                    return (
+
+                      <span
+                        className={`
+                          inline-flex items-center gap-2
+                          rounded-full
+                          border
+                          px-3 py-1.5
+                          text-xs
+                          font-semibold
+                          ${categoryConfig.className}
+                        `}
+                      >
+                        <CategoryIcon size={13} />
+                        {expense.category}
+                      </span>
+                    );
+                  })()}
 
                 </td>
 
@@ -300,7 +639,7 @@ function ExpenseTable() {
 
                 </td>
 
-                <td className="py-5">
+                <td className="rounded-r-2xl py-5 pr-4">
 
                   <div
                     className="
@@ -366,83 +705,90 @@ function ExpenseTable() {
 
       {/* Pagination */}
 
-      <div
-        className="
-          flex items-center
-          justify-between
-          mt-6
-        "
-      >
+      {!isDateFilterActive && (
 
-        <p className="text-sm text-gray-500">
+        <div
+          className="
+            flex items-center
+            justify-between
+            mt-6
+          "
+        >
 
-          Showing page{" "}
+          <p className="text-sm text-gray-500">
 
-          <span className="font-medium text-gray-700">
-            {pagination.page + 1}
-          </span>
+            Showing page{" "}
 
-          {" "}of{" "}
+            <span className="font-medium text-gray-700">
+              {currentPage + 1}
+            </span>
 
-          <span className="font-medium text-gray-700">
-            {pagination.totalPages}
-          </span>
+            {" "}of{" "}
 
-        </p>
+            <span className="font-medium text-gray-700">
+              {totalPages}
+            </span>
 
-        <div className="flex items-center gap-2">
+          </p>
 
-  <button
-    disabled={!pagination.hasPrevious}
-    className={`
-      px-4 py-2
-      rounded-xl
-      text-sm
-      border
+          <div className="flex items-center gap-2">
 
-      ${
-        pagination.hasPrevious
-          ? "border-gray-200 text-gray-700 hover:bg-gray-50"
-          : "border-gray-100 text-gray-300 cursor-not-allowed"
-      }
-    `}
-  >
-    Previous
-  </button>
+            <button
+              type="button"
+              onClick={goToPreviousPage}
+              disabled={!hasPreviousPage}
+              className={`
+                px-4 py-2
+                rounded-xl
+                text-sm
+                border
 
-  <button
-    className="
-      px-4 py-2
-      bg-green-600
-      text-white
-      rounded-xl
-      text-sm
-    "
-  >
-    {pagination.page + 1}
-  </button>
+                ${
+                  hasPreviousPage
+                    ? "border-gray-200 text-gray-700 hover:bg-gray-50"
+                    : "border-gray-100 text-gray-300 cursor-not-allowed"
+                }
+              `}
+            >
+              Previous
+            </button>
 
-  <button
-    disabled={!pagination.hasNext}
-    className={`
-      px-4 py-2
-      rounded-xl
-      text-sm
-      border
+            <button
+              className="
+                px-4 py-2
+                bg-green-600
+                text-white
+                rounded-xl
+                text-sm
+              "
+            >
+              {currentPage + 1}
+            </button>
 
-      ${
-        pagination.hasNext
-          ? "border-gray-200 text-gray-700 hover:bg-gray-50"
-          : "border-gray-100 text-gray-300 cursor-not-allowed"
-      }
-    `}
-  >
-    Next
-  </button>
+            <button
+              type="button"
+              onClick={goToNextPage}
+              disabled={!hasNextPage}
+              className={`
+                px-4 py-2
+                rounded-xl
+                text-sm
+                border
 
-</div>
+                ${
+                  hasNextPage
+                    ? "border-gray-200 text-gray-700 hover:bg-gray-50"
+                    : "border-gray-100 text-gray-300 cursor-not-allowed"
+                }
+              `}
+            >
+              Next
+            </button>
 
-      </div>
+          </div>
+
+        </div>
+      )}
 
     </div>
   );

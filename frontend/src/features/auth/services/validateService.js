@@ -65,5 +65,16 @@ export async function validateToken() {
         );
     }
 
+    if (response.ok) {
+
+        const username =
+            await response.text();
+
+        localStorage.setItem(
+            "username",
+            username
+        );
+    }
+
     return response.ok;
 }

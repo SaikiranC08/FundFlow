@@ -1,15 +1,23 @@
 package com.saikiran.expense_service.controller;
 
+import com.saikiran.expense_service.enums.DateRange;
 import com.saikiran.expense_service.requestDTO.CreateExpenseRequest;
 import com.saikiran.expense_service.responseDTO.ExpenseResponse;
+import com.saikiran.expense_service.responseDTO.MonthlyAnalyticsResponse;
 import com.saikiran.expense_service.responseDTO.PaginatedResponse;
+import com.saikiran.expense_service.responseDTO.WeeklyTrendResponse;
 import com.saikiran.expense_service.services.ExpenseService;
 import lombok.RequiredArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.saikiran.expense_service.services.CustomDateService;
 
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -18,6 +26,7 @@ import java.util.List;
 public class ExpenseController {
 
     private final ExpenseService expenseService;
+    private final CustomDateService customDateService;
 
 
     // Create Expense
@@ -105,6 +114,91 @@ public class ExpenseController {
     @GetMapping("/fund/{fundId}")
     public ResponseEntity<List<ExpenseResponse>> getExpensesByFundId(@RequestHeader("x-user-id") @NonNull String userId, @PathVariable Long fundId){
         return ResponseEntity.ok(expenseService.getExpenseByfundId(userId,fundId));
+    }
+
+
+    // analytic :
+
+    @GetMapping("/analytics/monthly")
+    public ResponseEntity<List<MonthlyAnalyticsResponse>>
+    getMonthlyAnalytics(
+
+            @RequestHeader("x-user-id")
+            String userId
+    ) {
+
+        return ResponseEntity.ok(
+
+                expenseService
+                        .getMonthlyAnalytics(
+                                userId
+                        )
+        );
+    }
+
+    @GetMapping("/analytics/weekly")
+    public ResponseEntity<List<WeeklyTrendResponse>>
+    getWeeklyTrend(
+
+            @RequestHeader("x-user-id")
+            String userId
+    ) {
+
+        return ResponseEntity.ok(
+
+                expenseService
+                        .getWeeklyTrend(
+                                userId
+                        )
+        );
+    }
+
+    @GetMapping("/analytics/top-category")
+    public ResponseEntity<Map.Entry<String, BigDecimal>>
+    getTopCategory(
+
+            @RequestHeader("x-user-id")
+            String userId
+    ) {
+
+        return ResponseEntity.ok(
+
+                expenseService
+                        .getTopCategory(
+                                userId
+                        )
+        );
+    }
+
+    @GetMapping("/expenses/filter")
+    public ResponseEntity<List<ExpenseResponse>>
+    getExpensesByDateRange(
+
+            @RequestHeader("x-user-id")
+            @NonNull
+            String userId,
+
+            @RequestParam
+            DateRange range,
+
+            @RequestParam(required = false)
+            LocalDate startDate,
+
+            @RequestParam(required = false)
+            LocalDate endDate
+    ) {
+
+        return ResponseEntity.ok(
+
+                customDateService
+                        .getExpensesByRange(
+
+                                userId,
+                                range,
+                                startDate,
+                                endDate
+                        )
+        );
     }
 
 

@@ -1,7 +1,67 @@
+import {
+  Circle,
+  Film,
+  HeartPulse,
+  Plane,
+  ShoppingBag,
+  UtensilsCrossed
+} from "lucide-react";
+
 function RecentExpenses({ expenses }) {
 
   const formatCurrency = (amount) =>
     `₹${Number(amount || 0).toLocaleString("en-IN")}`;
+
+  function getCategoryMeta(category = "") {
+
+    const normalizedCategory =
+      category.toLowerCase();
+
+    if (normalizedCategory === "food") {
+
+      return {
+        icon: UtensilsCrossed,
+        iconClass: "bg-orange-100 text-orange-600"
+      };
+    }
+
+    if (normalizedCategory === "travel") {
+
+      return {
+        icon: Plane,
+        iconClass: "bg-blue-100 text-blue-600"
+      };
+    }
+
+    if (normalizedCategory === "shopping") {
+
+      return {
+        icon: ShoppingBag,
+        iconClass: "bg-purple-100 text-purple-600"
+      };
+    }
+
+    if (normalizedCategory === "health") {
+
+      return {
+        icon: HeartPulse,
+        iconClass: "bg-red-100 text-red-500"
+      };
+    }
+
+    if (normalizedCategory === "entertainment") {
+
+      return {
+        icon: Film,
+        iconClass: "bg-green-100 text-green-600"
+      };
+    }
+
+    return {
+      icon: Circle,
+      iconClass: "bg-gray-100 text-gray-600"
+    };
+  }
 
   return (
 
@@ -18,11 +78,11 @@ function RecentExpenses({ expenses }) {
       <div className="mb-6">
 
         <h2 className="text-2xl font-bold text-gray-800">
-          Recent Expenses
+          Recent Activity
         </h2>
 
         <p className="text-gray-500 text-sm mt-1">
-          Latest expense activity
+          Latest money movement
         </p>
 
       </div>
@@ -35,104 +95,81 @@ function RecentExpenses({ expenses }) {
 
       ) : (
 
-        <div className="overflow-x-auto">
+        <div className="space-y-3">
 
-          <table className="w-full">
+          {expenses.map((expense) => {
 
-            <thead>
+            const categoryMeta =
+              getCategoryMeta(expense.category);
 
-              <tr
+            const Icon =
+              categoryMeta.icon;
+
+            return (
+
+              <div
+                key={expense.expenseId}
                 className="
-                  text-left
-                  text-gray-500
-                  text-sm
-                  border-b border-gray-100
+                  flex
+                  items-center
+                  justify-between
+                  gap-4
+                  rounded-2xl
+                  p-3
+                  hover:bg-gray-50
+                  transition
                 "
               >
 
-                <th className="pb-4 font-medium">
-                  Amount
-                </th>
+                <div className="flex items-center gap-4 min-w-0">
 
-                <th className="pb-4 font-medium">
-                  Category
-                </th>
-
-                <th className="pb-4 font-medium">
-                  Description
-                </th>
-
-                <th className="pb-4 font-medium">
-                  Date
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {expenses.map((expense) => (
-
-                <tr
-                  key={expense.expenseId}
-                  className="
-                    border-b border-gray-50
-                    hover:bg-gray-50
-                    transition
-                  "
-                >
-
-                  <td
-                    className="
-                      py-5
-                      font-semibold
-                      text-red-500
-                      whitespace-nowrap
-                    "
+                  <span
+                    className={`
+                      w-11 h-11
+                      rounded-2xl
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                      ${categoryMeta.iconClass}
+                    `}
                   >
-                    {formatCurrency(expense.amount)}
-                  </td>
+                    <Icon size={19} strokeWidth={1.9} />
+                  </span>
 
-                  <td className="py-5">
+                  <div className="min-w-0">
 
-                    <span
+                    <p className="font-semibold text-gray-900 truncate">
+                      {expense.description}
+                    </p>
+
+                    <div
                       className="
-                        bg-gray-100
-                        text-gray-700
+                        flex
+                        flex-wrap
+                        items-center
+                        gap-2
                         text-xs
-                        font-medium
-                        px-3 py-1
-                        rounded-full
+                        text-gray-400
+                        mt-1
                       "
                     >
-                      {expense.category}
-                    </span>
+                      <span>{expense.category}</span>
+                      <span>{expense.date}</span>
+                      <span>{expense.ownerType}</span>
+                    </div>
 
-                  </td>
+                  </div>
 
-                  <td className="py-5 text-sm text-gray-700">
-                    {expense.description}
-                  </td>
+                </div>
 
-                  <td
-                    className="
-                      py-5
-                      text-sm
-                      text-gray-500
-                      whitespace-nowrap
-                    "
-                  >
-                    {expense.date}
-                  </td>
+                <p className="font-bold text-red-500 whitespace-nowrap">
+                  {formatCurrency(expense.amount)}
+                </p>
 
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
+              </div>
+            );
+          })}
 
         </div>
 

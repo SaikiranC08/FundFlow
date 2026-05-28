@@ -66,7 +66,7 @@ export async function createExpense(expenseData) {
 
   const response = await fetch(
 
-    `${baseUrl}/v1/expenses`,
+    `${baseUrl}/expense/v1/expenses`,
 
     {
       method: "POST",

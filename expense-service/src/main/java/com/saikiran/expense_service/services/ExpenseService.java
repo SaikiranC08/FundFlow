@@ -8,9 +8,7 @@ import com.saikiran.expense_service.mapper.ExpenseMapper;
 import com.saikiran.expense_service.repository.ExpenseRepository;
 import com.saikiran.expense_service.repository.FundRepository;
 import com.saikiran.expense_service.requestDTO.CreateExpenseRequest;
-import com.saikiran.expense_service.responseDTO.ExpenseResponse;
-import com.saikiran.expense_service.responseDTO.PaginatedResponse;
-import com.saikiran.expense_service.responseDTO.PaginationMeta;
+import com.saikiran.expense_service.responseDTO.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +22,10 @@ import com.saikiran.expense_service.repository.CategoryRepository;
 
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Month;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -275,6 +272,175 @@ public class ExpenseService {
         }
 
         return categoryTotals;
+    }
+
+    public List<MonthlyAnalyticsResponse>
+    getMonthlyAnalytics(
+            String userId
+    ) {
+
+        List<ExpenseInfo> expenses =
+
+                expenseRepository
+                        .findExpenseInfoByUserId(userId);
+
+        Map<Month, BigDecimal> monthlyTotals =
+                new HashMap<>();
+
+        for (ExpenseInfo expense : expenses) {
+
+            Month month =
+                    expense.getDate()
+                           .getMonth();
+
+            BigDecimal currentAmount =
+
+                    monthlyTotals.getOrDefault(
+                            month,
+                            BigDecimal.ZERO
+                    );
+
+            monthlyTotals.put(
+
+                    month,
+
+                    currentAmount.add(
+                            expense.getAmount()
+                    )
+            );
+        }
+
+        return monthlyTotals
+                .entrySet()
+
+                .stream()
+
+                .sorted(
+                        Map.Entry.comparingByKey()
+                )
+
+                .map(entry ->
+
+                        MonthlyAnalyticsResponse
+                                .builder()
+
+                                .month(
+                                        entry.getKey()
+                                             .name()
+                                )
+
+                                .amount(
+                                        entry.getValue()
+                                )
+
+                                .build()
+                )
+
+                .toList();
+    }
+
+    public List<WeeklyTrendResponse>
+    getWeeklyTrend(
+            String userId
+    ) {
+
+        LocalDate today =
+                LocalDate.now();
+
+        LocalDate weekStart =
+                today.minusDays(6);
+
+        List<ExpenseInfo> expenses =
+
+                expenseRepository
+                        .findExpenseInfoByUserId(userId)
+
+                        .stream()
+
+                        .filter(expense ->
+
+                                !expense.getDate()
+                                        .isBefore(
+                                                weekStart
+                                        )
+                        )
+
+                        .toList();
+
+        Map<DayOfWeek, BigDecimal> totals =
+                new LinkedHashMap<>();
+
+        for (DayOfWeek day : DayOfWeek.values()) {
+
+            totals.put(
+                    day,
+                    BigDecimal.ZERO
+            );
+        }
+
+        for (ExpenseInfo expense : expenses) {
+
+            DayOfWeek day =
+                    expense.getDate()
+                           .getDayOfWeek();
+
+            totals.put(
+
+                    day,
+
+                    totals.get(day)
+                          .add(
+                                  expense.getAmount()
+                          )
+            );
+        }
+
+        return totals
+                .entrySet()
+
+                .stream()
+
+                .map(entry ->
+
+                        WeeklyTrendResponse
+                                .builder()
+
+                                .day(
+                                        entry.getKey()
+                                             .name()
+                                )
+
+                                .amount(
+                                        entry.getValue()
+                                )
+
+                                .build()
+                )
+
+                .toList();
+    }
+
+    public Map.Entry<String, BigDecimal>
+    getTopCategory(
+            String userId
+    ) {
+
+        Map<String, BigDecimal> categories =
+
+                getCategoriesExpense(
+                        userId
+                );
+
+        return categories
+                .entrySet()
+
+                .stream()
+
+                .max(
+                        Map.Entry.comparingByValue()
+                )
+
+                .orElse(null);
     }
 
 }

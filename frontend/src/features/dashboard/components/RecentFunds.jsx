@@ -3,146 +3,121 @@ function RecentFunds({ funds }) {
   const formatCurrency = (amount) =>
     `₹${Number(amount || 0).toLocaleString("en-IN")}`;
 
-  function getStatusColor(status) {
-
-    switch (status) {
-
-      case "ACTIVE":
-        return "bg-green-100 text-green-700";
-
-      case "EXHAUSTED":
-        return "bg-orange-100 text-orange-700";
-
-      case "CLOSED":
-        return "bg-gray-200 text-gray-700";
-
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  }
-
   return (
 
-    <div>
+    <div
+      className="
+        bg-white
+        rounded-3xl
+        shadow-sm
+        border border-gray-100
+        p-6
+      "
+    >
 
       <div className="mb-6">
 
         <h2 className="text-2xl font-bold text-gray-800">
-          Recent Funds
+          Fund Health
         </h2>
 
         <p className="text-gray-500 text-sm mt-1">
-          Latest fund activity
+          Current active fund status
         </p>
 
       </div>
 
       {funds.length === 0 ? (
 
-        <div
-          className="
-            bg-white
-            rounded-3xl
-            p-10
-            text-center
-            border border-gray-100
-            text-gray-500
-          "
-        >
+        <div className="py-10 text-center text-gray-500">
           No recent funds found.
         </div>
 
       ) : (
 
-        <div
-          className="
-            grid
-            grid-cols-1
-            md:grid-cols-2
-            xl:grid-cols-3
-            gap-6
-          "
-        >
+        <div className="space-y-4">
 
-          {funds.map((fund) => (
+          {funds.map((fund) => {
 
-            <div
-              key={fund.fundId}
-              className="
-                bg-white
-                rounded-3xl
-                shadow-sm
-                border border-gray-100
-                p-6
-              "
-            >
+            const usedAmount =
+              Number(fund.amountReceived || 0) -
+              Number(fund.remainingAmount || 0);
+
+            const usedPercentage =
+              Number(fund.amountReceived || 0) > 0
+                ? Math.round(
+                    (usedAmount / Number(fund.amountReceived)) * 100
+                  )
+                : 0;
+
+            return (
 
               <div
+                key={fund.fundId}
                 className="
-                  flex
-                  items-start
-                  justify-between
-                  gap-4
-                  mb-5
+                  rounded-3xl
+                  border border-gray-100
+                  bg-gray-50
+                  p-5
                 "
               >
 
-                <h3
-                  className="
-                    text-xl
-                    font-semibold
-                    text-gray-900
-                  "
-                >
-                  {fund.ownerName}
-                </h3>
+                <div className="flex items-start justify-between gap-4 mb-4">
 
-                <span
-                  className={`
-                    px-3 py-1
-                    rounded-full
-                    text-xs
-                    font-medium
-                    whitespace-nowrap
-                    ${getStatusColor(fund.status)}
-                  `}
-                >
-                  {fund.status}
-                </span>
+                  <div className="min-w-0">
 
-              </div>
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {fund.ownerName}
+                    </h3>
 
-              <div className="space-y-4">
+                    <p className="text-sm text-gray-500 mt-1">
+                      {formatCurrency(fund.remainingAmount)} remaining
+                    </p>
 
-                <div>
+                  </div>
 
-                  <p className="text-sm text-gray-400">
-                    Amount Received
-                  </p>
+                  <div className="text-right shrink-0">
 
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {formatCurrency(fund.amountReceived)}
-                  </p>
+                    <p className="text-xl font-bold text-gray-900">
+                      {usedPercentage}%
+                    </p>
+
+                    <p className="text-xs text-gray-400">
+                      used
+                    </p>
+
+                  </div>
 
                 </div>
 
-                <div>
+                <div className="h-3 rounded-full bg-white overflow-hidden border border-gray-100">
 
-                  <p className="text-sm text-gray-400">
-                    Remaining Amount
-                  </p>
+                  <div
+                    className="h-full rounded-full bg-green-500"
+                    style={{
+                      width: `${Math.min(usedPercentage, 100)}%`
+                    }}
+                  />
 
-                  <p className="text-lg font-semibold text-gray-800 mt-1">
-                    {formatCurrency(fund.remainingAmount)}
-                  </p>
+                </div>
+
+                <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
+
+                  <span>
+                    Used {formatCurrency(usedAmount)}
+                  </span>
+
+                  <span>
+                    Total {formatCurrency(fund.amountReceived)}
+                  </span>
 
                 </div>
 
               </div>
 
-            </div>
+            );
+          })}
 
-          ))}
 
         </div>
 

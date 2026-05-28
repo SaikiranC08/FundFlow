@@ -3,6 +3,7 @@ package com.saikiran.expense_service.controller;
 
 import com.saikiran.expense_service.requestDTO.CreateFundRequest;
 import com.saikiran.expense_service.responseDTO.FundResponse;
+import com.saikiran.expense_service.responseDTO.FundUtilizationResponse;
 import com.saikiran.expense_service.services.FundService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -79,6 +80,23 @@ public class FundController {
 
         return ResponseEntity.ok(
                 response
+        );
+    }
+
+    @GetMapping("/analytics/utilization")
+    public ResponseEntity<List<FundUtilizationResponse>>
+    getFundUtilization(
+
+            @RequestHeader("x-user-id")
+            String userId
+    ) {
+
+        return ResponseEntity.ok(
+
+                fundService
+                        .getFundUtilization(
+                                userId
+                        )
         );
     }
 }

@@ -11,11 +11,13 @@ import com.saikiran.expense_service.mapper.FundMapper;
 import com.saikiran.expense_service.repository.FundRepository;
 import com.saikiran.expense_service.requestDTO.CreateFundRequest;
 import com.saikiran.expense_service.responseDTO.FundResponse;
+import com.saikiran.expense_service.responseDTO.FundUtilizationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -206,6 +208,91 @@ public class FundService {
     public FundResponse getFundById(String userId, Long fundId) {
         FundInfo fundInfo = fundRepository.getFundByUserIdAndFundId(userId,fundId);
         return fundMapper.toFundResponse(fundInfo);
+    }
+
+
+    public List<FundUtilizationResponse>
+    getFundUtilization(
+            String userId
+    ) {
+
+        List<FundInfo> funds =
+
+                fundRepository
+                        .findByUserId(userId)
+
+                        .stream()
+
+                        .filter(fund ->
+
+                                !"SELF"
+                                        .equals(
+                                                fund.getOwnerType()
+                                        )
+                        )
+
+                        .toList();
+
+        return funds
+                .stream()
+
+                .map(fund -> {
+
+                    BigDecimal used =
+
+                            fund.getAmountReceived()
+                                .subtract(
+                                        fund.getRemainingAmount()
+                                );
+
+                    Integer percentage =
+
+                            fund.getAmountReceived()
+                                .compareTo(
+                                        BigDecimal.ZERO
+                                ) == 0
+
+                                    ? 0
+
+                                    : used.multiply(
+                                                  BigDecimal.valueOf(100)
+                                          )
+
+                                          .divide(
+                                                  fund.getAmountReceived(),
+                                                  0,
+                                                  RoundingMode.HALF_UP
+                                          )
+
+                                          .intValue();
+
+                    return FundUtilizationResponse
+                            .builder()
+
+                            .ownerName(
+                                    fund.getOwnerName()
+                            )
+
+                            .received(
+                                    fund.getAmountReceived()
+                            )
+
+                            .remaining(
+                                    fund.getRemainingAmount()
+                            )
+
+                            .used(
+                                    used
+                            )
+
+                            .utilizationPercentage(
+                                    percentage
+                            )
+
+                            .build();
+                })
+
+                .toList();
     }
 }
 
