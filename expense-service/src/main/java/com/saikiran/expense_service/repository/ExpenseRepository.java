@@ -63,4 +63,9 @@ GROUP BY e.category
 
 
     List<ExpenseInfo> findExpenseInfoByUserIdAndFund_FundId(String userId,Long fundId);
+
+    List<ExpenseInfo>
+    findTop5ByUserIdOrderByDateDesc(
+            String userId
+    );
 }

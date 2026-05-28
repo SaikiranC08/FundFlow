@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public interface FundRepository extends CrudRepository<FundInfo, Long> {
 
-    FundInfo findByUserId(String userId);
+    List<FundInfo> findByUserId(String userId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
@@ -101,5 +101,7 @@ public interface FundRepository extends CrudRepository<FundInfo, Long> {
     boolean existsByUserIdAndOwnerTypeAndOwnerName(String userId, String ownerType, String ownerName);
 
     FundInfo getFundByUserIdAndFundId(String userId, Long fundId);
+
+    List<FundInfo> findTop3ByUserIdOrderByCreatedDateDesc(String userId);
 
 }

@@ -2,6 +2,7 @@ package com.saikiran.expense_service.controller;
 
 import com.saikiran.expense_service.dto.FundSpendSummary;
 import com.saikiran.expense_service.enums.DateRange;
+import com.saikiran.expense_service.responseDTO.DashboardResponse;
 import com.saikiran.expense_service.responseDTO.ExpenseResponse;
 import com.saikiran.expense_service.services.CustomDateService;
 import com.saikiran.expense_service.services.DashboardService;
@@ -17,44 +18,22 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/dashboard/v1")
+@RequestMapping("/v1/dashboard")
 @RequiredArgsConstructor
 public class DashboardController {
 
-    private final CustomDateService customDateService;
     private final DashboardService dashboardService;
 
-    @GetMapping("/expenses")
-    public ResponseEntity<List<ExpenseResponse>> getExpensesByRange(
-            @RequestHeader("x-user-id") @NonNull String userId,
-            @RequestParam DateRange range,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate
+    @GetMapping
+    public ResponseEntity<DashboardResponse> getDashboard(
+            @RequestHeader("x-user-id")
+            String userId
     ) {
-        return ResponseEntity.ok(
-                customDateService.getExpensesByRange(userId, range, startDate, endDate)
-        );
-    }
 
-    @GetMapping("/expenses/category-total")
-    public ResponseEntity<Map<String, BigDecimal>> getCategoryTotals(
-            @RequestHeader("x-user-id") String userId
-    ) {
         return ResponseEntity.ok(
-                dashboardService.getCategoryWiseTotal(userId)
-        );
-}
 
-    @GetMapping("/funds/spend-summary")
-    public ResponseEntity<List<FundSpendSummary>> getFundSpendSummary(
-            @RequestHeader("x-user-id") String userId
-    ) {
-        return ResponseEntity.ok(
-                dashboardService.getFundWiseTotal(userId)
+                dashboardService
+                        .getDashboard(userId)
         );
     }
 }
-
-
-
-
