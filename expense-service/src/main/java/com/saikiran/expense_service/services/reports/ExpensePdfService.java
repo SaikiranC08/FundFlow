@@ -13,6 +13,7 @@ import java.awt.Color;
 import com.saikiran.expense_service.entities.ExpenseInfo;
 import com.saikiran.expense_service.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ExpensePdfService {
 
     private final ExpenseRepository expenseRepository;
@@ -132,7 +134,7 @@ public class ExpensePdfService {
             return out.toByteArray();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to generate expense PDF report for user: {} in range {} to {}", userId, startDate, endDate, e);
             throw new RuntimeException("Failed to generate expense PDF", e);
         }
     }

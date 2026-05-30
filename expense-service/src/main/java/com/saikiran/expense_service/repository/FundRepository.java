@@ -2,7 +2,6 @@ package com.saikiran.expense_service.repository;
 
 import com.saikiran.expense_service.dto.FundSpendSummary;
 import com.saikiran.expense_service.entities.FundInfo;
-import com.saikiran.expense_service.responseDTO.FundResponse;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;

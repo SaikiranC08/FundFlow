@@ -3,7 +3,6 @@ package com.saikiran.expense_service.repository;
 
 import com.saikiran.expense_service.dto.CategoryExpenseTotal;
 import com.saikiran.expense_service.entities.ExpenseInfo;
-import com.saikiran.expense_service.responseDTO.ExpenseResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;

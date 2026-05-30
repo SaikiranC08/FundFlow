@@ -15,6 +15,7 @@ import com.saikiran.expense_service.entities.FundInfo;
 import com.saikiran.expense_service.repository.ExpenseRepository;
 import com.saikiran.expense_service.repository.FundRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FundPdfService {
 
     private final ExpenseRepository expenseRepository;
@@ -121,7 +123,7 @@ public class FundPdfService {
             return out.toByteArray();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to generate fund PDF report for user: {} and fund: {}", userId, fundId, e);
             throw new RuntimeException("Failed to generate fund PDF", e);
         }
     }

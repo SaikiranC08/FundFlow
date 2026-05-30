@@ -16,26 +16,13 @@ public class CategorySeeder {
 
     @PostConstruct
     public void seedCategories() {
-
         for (DefaultCategory defaultCategory : DefaultCategory.values()) {
-
-            boolean exists =
-                    categoryRepository.existsByNameIgnoreCase(
-                            defaultCategory.getDisplayName()
-                    );
+            boolean exists = categoryRepository.existsByNameIgnoreCase(defaultCategory.getDisplayName());
 
             if (!exists) {
-
                 Category category = new Category();
-
-                category.setName(
-                        defaultCategory.getDisplayName()
-                );
-
-                category.setSource(
-                        CategorySource.SYSTEM
-                );
-
+                category.setName(defaultCategory.getDisplayName());
+                category.setSource(CategorySource.SYSTEM);
                 categoryRepository.save(category);
             }
         }

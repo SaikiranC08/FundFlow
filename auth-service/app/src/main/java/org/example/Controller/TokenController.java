@@ -1,6 +1,6 @@
 package org.example.Controller;
 
-
+import lombok.extern.slf4j.Slf4j;
 import org.example.entities.RefreshToken;
 import org.example.request.AuthRequestDTO;
 import org.example.request.RefreshTokenRequestDTO;
@@ -20,73 +20,46 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v1")
+@Slf4j
 public class TokenController {
 
     @Autowired
     private RefreshTokenService refreshTokenService;
+
     @Autowired
     private JwtService jwtService;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
-//    @PostMapping("/login")
-//    public ResponseEntity AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO){
-//        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
-//        if(authentication.isAuthenticated()){
-//            RefreshToken refreshToken = refreshTokenService.createNewToken(authRequestDTO.getUsername());
-//            return new ResponseEntity<>(JwtResponseDTO.builder()
-//                    .accessToken(jwtService.GenerateToken(authRequestDTO.getUsername()))
-//                    .token(refreshToken.getToken())
-//                    .build(), HttpStatus.OK);
-//
-//        } else {
-//            return new ResponseEntity<>("Exception in User Service", HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-@PostMapping("/login")
-public ResponseEntity AuthenticateAndGetToken(
-        @RequestBody AuthRequestDTO authRequestDTO
-){
+    @PostMapping("/login")
+    public ResponseEntity<?> AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
+        log.info("Login request received for user: '{}'", authRequestDTO.getUsername());
 
-    System.out.println("LOGIN API HIT");
-
-    Authentication authentication =
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authRequestDTO.getUsername(),
-                            authRequestDTO.getPassword()
-                    )
-            );
-
-    System.out.println("AUTH SUCCESS");
-
-    if(authentication.isAuthenticated()) {
-
-        System.out.println("INSIDE AUTHENTICATED");
-
-        RefreshToken refreshToken = refreshTokenService.replaceRefreshTokenForLogin(authRequestDTO.getUsername());
-
-        return new ResponseEntity<>(
-                JwtResponseDTO.builder()
-                              .accessToken(
-                                      jwtService.GenerateToken(
-                                              authRequestDTO.getUsername()
-                                      )
-                              )
-                              .token(refreshToken.getToken())
-                              .build(),
-                HttpStatus.OK
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword())
         );
+
+        log.info("User '{}' authenticated successfully", authRequestDTO.getUsername());
+
+        if (authentication.isAuthenticated()) {
+            RefreshToken refreshToken = refreshTokenService.replaceRefreshTokenForLogin(authRequestDTO.getUsername());
+            String jwtToken = jwtService.GenerateToken(authRequestDTO.getUsername());
+
+            return new ResponseEntity<>(
+                    JwtResponseDTO.builder()
+                            .accessToken(jwtToken)
+                            .token(refreshToken.getToken())
+                            .build(),
+                    HttpStatus.OK
+            );
+        }
+
+        return new ResponseEntity<>("Exception in User Service", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    return new ResponseEntity<>(
-            "Exception in User Service",
-            HttpStatus.INTERNAL_SERVER_ERROR
-    );
-}
-
     @PostMapping("/refreshToken")
-    public JwtResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO){
+    public JwtResponseDTO refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
         return refreshTokenService.findByToken(refreshTokenRequestDTO.getToken())
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUserInfo)
@@ -94,8 +67,8 @@ public ResponseEntity AuthenticateAndGetToken(
                     String accessToken = jwtService.GenerateToken(userInfo.getUserName());
                     return JwtResponseDTO.builder()
                             .accessToken(accessToken)
-                            .token(refreshTokenRequestDTO.getToken()).build();
-                }).orElseThrow(() ->new RuntimeException("Refresh Token is not in DB..!!"));
+                            .token(refreshTokenRequestDTO.getToken())
+                            .build();
+                }).orElseThrow(() -> new RuntimeException("Refresh Token is not in DB..!!"));
     }
-
 }
