@@ -31,10 +31,14 @@ public class GlobalExceptionHandler {
 
     // DATABASE / TECHNICAL ERRORS (generic message)
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<String> handleDatabaseError(DataAccessException ex) {
+    public ResponseEntity<String> handleDatabaseError(DataAccessException e) {
+
+        e.printStackTrace();
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Something went wrong. Please try again later.");
+                .body(e.toString());
+
     }
 
     // FALLBACK (never expose internals)
