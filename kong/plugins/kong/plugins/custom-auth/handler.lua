@@ -82,7 +82,7 @@ function CustomAuthHandler:access(config)
 
   -- Forward user ID to downstream service
   kong.service.request.set_header(
-    "X-User-ID",
+    "x-user-id",
     user_id
   )
 end
