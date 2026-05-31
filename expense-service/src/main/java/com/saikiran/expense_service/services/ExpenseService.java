@@ -68,7 +68,7 @@ public class ExpenseService {
 
         // FETCH FUND ENTITY
         if (fundId == null){
-            throw new RuntimeException("Category ID became null");
+            throw new RuntimeException("Fund ID became null");
         }
         System.out.println("Fund Id = " + fundId);
         FundInfo fund = fundRepository.findById(fundId)
