@@ -35,6 +35,7 @@ public class ExpenseService {
 
     @Transactional
     public ExpenseResponse addExpense(CreateExpenseRequest expenseDTO, String idempotencyKey) {
+        System.out.println("UserID = " + expenseDTO.getUserId());
         Optional<ExpenseInfo> existing = expenseRepository.findByIdempotencyKey(idempotencyKey);
         if (existing.isPresent()) {
             return expenseMapper.toExpenseResponse(existing.get());
@@ -56,10 +57,20 @@ public class ExpenseService {
         }
 
         // FETCH CATEGORY
+        if(expenseDTO.getCategoryId() == null){
+            throw new RuntimeException("Category ID became null");
+        }
+        System.out.println("Category ID = " + expenseDTO.getCategory());
+
+
         Category category = categoryRepository.findById(expenseDTO.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         // FETCH FUND ENTITY
+        if (fundId == null){
+            throw new RuntimeException("Category ID became null");
+        }
+        System.out.println("Fund Id = " + fundId);
         FundInfo fund = fundRepository.findById(fundId)
                 .orElseThrow(() -> new RuntimeException("Fund not found"));
 
