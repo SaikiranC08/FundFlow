@@ -27,7 +27,7 @@ function Landing() {
   // Form states
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [signupData, setSignupData] = useState({
-    username: "",
+    userName: "",
     email: "",
     password: "",
     phoneNumber: ""
@@ -115,8 +115,8 @@ function Landing() {
 
     // Inline Validations
     const errors = {};
-    if (!signupData.username) {
-      errors.username = "Username is required";
+    if (!signupData.userName) {
+      errors.userName = "Username is required";
     }
     if (!signupData.email) {
       errors.email = "Email is required";
@@ -372,17 +372,17 @@ function Landing() {
                   <label className="block text-xs font-semibold text-slate-700">Username</label>
                   <input
                     type="text"
-                    name="username"
-                    value={signupData.username}
+                    name="userName"
+                    value={signupData.userName}
                     onChange={handleSignupChange}
                     disabled={loading}
                     placeholder="Choose a username"
                     className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-all duration-200 bg-white placeholder-slate-400 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600/20 disabled:bg-slate-50 disabled:cursor-not-allowed ${
-                      signupErrors.username  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
+                      signupErrors.userName ? "border-red-300 focus:border-red-500 focus:ring-red-500/20" : "border-slate-200"
                     }`}
                   />
-                  {signupErrors.username && (
-                    <p className="text-xs font-medium text-red-600">{signupErrors.username}</p>
+                  {signupErrors.userName && (
+                    <p className="text-xs font-medium text-red-600">{signupErrors.userName}</p>
                   )}
                 </div>
 
