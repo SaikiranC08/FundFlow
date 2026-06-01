@@ -1,5 +1,6 @@
 export async function refreshAccessToken() {
 
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
     const refreshToken =
         localStorage.getItem("token");
 
@@ -9,7 +10,7 @@ export async function refreshAccessToken() {
     }
 
     const response = await fetch(
-        "http://localhost:8000/auth/v1/refreshToken",
+        `${baseUrl}/auth/v1/refreshToken`,
         {
             method: "POST",
 

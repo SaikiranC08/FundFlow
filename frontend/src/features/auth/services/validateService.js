@@ -2,6 +2,7 @@ import { refreshAccessToken } from "./refreshService";
 
 export async function validateToken() {
 
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
     let token =
         localStorage.getItem("access_token");
 
@@ -11,7 +12,7 @@ export async function validateToken() {
     }
 
     let response = await fetch(
-        "http://localhost:8000/auth/v1/validate",
+        `${baseUrl}/auth/v1/validate`,
         {
             method: "GET",
 
