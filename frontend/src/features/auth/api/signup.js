@@ -1,5 +1,5 @@
 export async function signup(formData) {
-  const baseUrl = import.meta.env.VITE_BASE_URL ;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   const response = await fetch(`${baseUrl}/auth/v1/signup`, {
     method: "POST",
