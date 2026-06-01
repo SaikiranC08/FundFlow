@@ -33,7 +33,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getServletPath();
+        String uri = request.getRequestURI();
+        
+        System.out.println("JWT FILTER HIT");
+        System.out.println("Servlet Path: " + path);
+        System.out.println("Request URI: " + uri);
+        
+        // Skip filter logic for open endpoints to avoid parsing expired/invalid tokens
+        if (
+            path.equals("/v1/login") ||
+            path.equals("/v1/signup") ||
+            path.equals("/v1/refreshToken") ||
+            path.equals("/v1/validate")
+        ) {
+            System.out.println("SKIPPING JWT FILTER");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
+        System.out.println("AUTH HEADER: " + authHeader);
+        
         String token = null;
         String username = null;
 

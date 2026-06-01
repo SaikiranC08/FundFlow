@@ -34,6 +34,8 @@ public class TokenController {
 
     @PostMapping("/login")
     public ResponseEntity<?> AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO) {
+        System.out.println("LOGIN CONTROLLER HIT");
+        System.out.println(authRequestDTO.getUsername());
         log.info("Login request received for user: '{}'", authRequestDTO.getUsername());
 
         Authentication authentication = authenticationManager.authenticate(
