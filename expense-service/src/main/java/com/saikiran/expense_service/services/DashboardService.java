@@ -46,10 +46,21 @@ public class DashboardService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Active Funds
+
         List<FundInfo> activeFundsList = fundRepository.findByUserId(userId)
-                .stream()
-                .filter(fund -> fund.getStatus() == FundStatus.ACTIVE)
-                .toList();
+
+                                                       .stream()
+                                                       // SKIP SELF FUNDS
+                                                       .filter(fund ->
+                                                               !"SELF".equalsIgnoreCase(
+                                                                       fund.getOwnerType()
+                                                               )
+                                                       )
+                                                       // ONLY ACTIVE
+                                                       .filter(fund ->
+                                                               fund.getStatus() == FundStatus.ACTIVE
+                                                       )
+                                                       .toList();
 
         Long activeFunds = (long) activeFundsList.size();
 
