@@ -32,24 +32,46 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsServiceImpl userDetailsServiceImpl;
 
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthFilter jwtAuthFilter
+    ) throws Exception {
+
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+
                 .cors(Customizer.withDefaults())
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/login", "/v1/refreshToken", "/v1/signup", "/v1/debug/**", "/v1/validate").permitAll()
+                        .requestMatchers(
+                                "/v1/login",
+                                "/v1/refreshToken",
+                                "/v1/signup",
+                                "/v1/debug/**",
+                                "/v1/validate"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .httpBasic(Customizer.withDefaults())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
+                .sessionManagement(sess ->
+                        sess.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
+
+                .addFilterBefore(
+                        jwtAuthFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                )
+
                 .authenticationProvider(authenticationProvider())
+
                 .build();
     }
 
-    @Value("${app.frontend-url}")
-    private String frontendUrl;
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
